@@ -25,8 +25,7 @@
 #define LED_F 5
 #define LED_G 6
 #define LED_DP 7
-#define LED_UC 8
-#define LED_LC 9
+#define LED_COLON 8
 
 struct pins_data {
 
@@ -34,9 +33,9 @@ struct pins_data {
 	volatile uint8_t *dig_port[5];
 	uint8_t dig_port_index[5];
 
-	volatile uint8_t *led_ddr[10];
-	volatile uint8_t *led_port[10];
-	uint8_t led_port_index[10];
+	volatile uint8_t *led_ddr[9];
+	volatile uint8_t *led_port[9];
+	uint8_t led_port_index[9];
 
 } pins_data;
 
@@ -58,8 +57,7 @@ struct pins_data {
  *						LED_F
  *						LED_G
  *						LED_DP - dot point
- *						LED_UC - Only for digit
- *						LED_LC - Only for digit
+ *						LED_COLON - Only for DIG_SPECIAL
  */
 volatile bool display_state[5][10];
 
@@ -76,9 +74,13 @@ void display();
 /**
  * set display state array by digit. all digit can be from 0 to 9 of course.
  */
-void set_display_state(int digit1, int digit2, int digit3, int digit4, bool upperComaDot, bool lowerComaDot);
+void set_display_state_by_4_digit(int digit1, int digit2, int digit3, int digit4, bool colon_state);
+
+void set_display_state_by_2_digit(int digit1, int digit2, bool colon_state);
 
 void set_digit(int digit_index, int digit);
+
+
 
 void turn_off_all();
 

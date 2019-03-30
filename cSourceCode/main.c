@@ -7,10 +7,11 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
 #include "led_display.h"
 
-
+double volatile time = 0.0;
 
 int main() {
 
@@ -46,32 +47,30 @@ int main() {
 	pins_data.led_port_index[LED_F] = PC5;
 	pins_data.led_port_index[LED_G] = PB0;
 
+	pins_data.led_ddr[LED_COLON] = &DDRD;
+	pins_data.led_port[LED_COLON] = &PORTD;
+	pins_data.led_port_index[LED_COLON] = PD7;
+
 	init_led_display();
 
+	// ================ timer initialize ================
 
+	TCCR0 |= (1<<CS02) | (1<<CS00); // cls. 1024 preskaler
+	TIMSK |= (1<<TOIE0);
+	sei();
 
-	i=0;
 	// ================ main loop =============
 	while(1)
 	{
-		set_display_state(i, i, i, i, false, false);
-
-		_delay_ms(500);
+		_delay_ms(2);
 		display();
-		_delay_ms(500);
-		display();
-		_delay_ms(500);
-		display();
-		_delay_ms(500);
-		display();
-		_delay_ms(500);
-		display();
-
-		i++;
-		if(i==10) {
-			i = 0;
-		}
 	}
-
-
 }
+
+ISR(TIMER0_OVF_vect)
+{
+	time += 0.254;
+
+	set_display_state_by_2_digit((int)time, (int)time, true);
+}
+
