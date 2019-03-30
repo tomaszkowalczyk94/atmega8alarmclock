@@ -4,42 +4,26 @@
 
 void init_led_display()
 {
-	//initialize pins
-	*pins_data.dig_1_ddr |= (1<<pins_data.dig_1_port_index);
-	*pins_data.dig_2_ddr |= (1<<pins_data.dig_2_port_index);
-	*pins_data.dig_3_ddr |= (1<<pins_data.dig_3_port_index);
-	*pins_data.dig_4_ddr |= (1<<pins_data.dig_4_port_index);
-	*pins_data.dig_special_ddr |= (1<<pins_data.dig_special_port_index);
+	//======= initialize pins
+	int i, y;
 
-	*pins_data.led_a_ddr |= (1<<pins_data.led_a_port_index);
-	*pins_data.led_b_ddr |= (1<<pins_data.led_b_port_index);
-	*pins_data.led_c_ddr |= (1<<pins_data.led_c_port_index);
-	*pins_data.led_d_ddr |= (1<<pins_data.led_d_port_index);
-	*pins_data.led_e_ddr |= (1<<pins_data.led_e_port_index);
-	*pins_data.led_f_ddr |= (1<<pins_data.led_f_port_index);
-	*pins_data.led_g_ddr |= (1<<pins_data.led_g_port_index);
+	for(i=0; i<5 ; i++)
+	{
+		*pins_data.dig_ddr[i] |= (1<<pins_data.dig_port_index[i]);
+	}
 
-	*pins_data.led_dp_ddr |= (1<<pins_data.led_dp_port_index);
-	*pins_data.led_uc_ddr |= (1<<pins_data.led_uc_port_index);
-	*pins_data.led_lc_ddr |= (1<<pins_data.led_lc_port_index);
+	for(i=0; i<10 ; i++)
+	{
+		*pins_data.led_ddr[i] |= (1<<pins_data.led_port_index[i]);
+	}
 
-	//initialize state
-	struct digit_state start_digit_state;
-	start_digit_state.a = false;
-	start_digit_state.b = false;
-	start_digit_state.c = false;
-	start_digit_state.d = false;
-	start_digit_state.e = false;
-	start_digit_state.f = false;
-	start_digit_state.g = false;
-	start_digit_state.dp = false;
-
-	display_state.digit_1_state = start_digit_state;
-	display_state.digit_2_state = start_digit_state;
-	display_state.digit_3_state = start_digit_state;
-	display_state.digit_4_state = start_digit_state;
-	display_state.uc = false;
-	display_state.lc = false;
+	//======= initialize state of variable "display_state"
+	for(i=0; i<5 ; i++)
+	{
+		for(y=0 ; y<10 ; y++) {
+			display_state[i][y] = false;
+		}
+	}
 
 }
 
@@ -47,49 +31,150 @@ void display()
 {
 	turn_off_all();
 
-	static int display_segment_index = 0;
+	static int display_segment_index = 1;
 
-	switch(display_segment_index) {
-		/** comma */
-		case 0:
+	turn_on_digit(display_segment_index);
 
-			break;
-
-		/** digit 1*/
-		case 1:
-			*pins_data.dig_1_port |= (1<<pins_data.dig_1_port_index);
-			break;
-		/** digit 2 */
-
-		case 2:
-			*pins_data.dig_2_port |= (1<<pins_data.dig_2_port_index);
-			break;
-
-		/** digit 3 */
-		case 3:
-			*pins_data.dig_3_port |= (1<<pins_data.dig_3_port_index);
-			break;
-
-		/** digit 4 */
-		case 4:
-			*pins_data.dig_4_port |= (1<<pins_data.dig_4_port_index);
-			break;
+	for(int i=0; i<10; i++)
+	{
+		if(display_state[display_segment_index][i]) {
+			turn_on_led(i);
+		}
 	}
 
 	display_segment_index ++;
-	if(display_segment_index>5) {
-		display_segment_index = 0;
+	if(display_segment_index>4) {
+		display_segment_index = 1;
 	}
 }
 
+void set_display_state(int digit1, int digit2, int digit3, int digit4, bool upperComaDot, bool lowerComaDot)
+{
+	set_digit(DIG_1, digit1);
+	set_digit(DIG_2, digit2);
+	set_digit(DIG_3, digit3);
+	set_digit(DIG_4, digit4);
+}
 
+void set_digit(int digit_index, int digit)
+{
+	if(digit_index == DIG_SPECIAL) {
+		return;
+	}
+
+	switch(digit) {
+		case 0:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = true;
+			display_state[digit_index][LED_F] = true;
+			display_state[digit_index][LED_G] = false;
+			break;
+		case 1:
+			display_state[digit_index][LED_A] = false;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = false;
+			display_state[digit_index][LED_E] = false;
+			display_state[digit_index][LED_F] = false;
+			display_state[digit_index][LED_G] = false;
+			break;
+		case 2:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = false;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = true;
+			display_state[digit_index][LED_F] = false;
+			display_state[digit_index][LED_G] = true;
+			break;
+		case 3:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = false;
+			display_state[digit_index][LED_F] = false;
+			display_state[digit_index][LED_G] = true;
+			break;
+		case 4:
+			display_state[digit_index][LED_A] = false;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = false;
+			display_state[digit_index][LED_E] = false;
+			display_state[digit_index][LED_F] = true;
+			display_state[digit_index][LED_G] = true;
+			break;
+		case 5:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = false;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = false;
+			display_state[digit_index][LED_F] = true;
+			display_state[digit_index][LED_G] = true;
+			break;
+		case 6:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = false;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = true;
+			display_state[digit_index][LED_F] = true;
+			display_state[digit_index][LED_G] = true;
+			break;
+		case 7:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = false;
+			display_state[digit_index][LED_E] = false;
+			display_state[digit_index][LED_F] = false;
+			display_state[digit_index][LED_G] = false;
+			break;
+		case 8:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = true;
+			display_state[digit_index][LED_F] = true;
+			display_state[digit_index][LED_G] = true;
+			break;
+		case 9:
+			display_state[digit_index][LED_A] = true;
+			display_state[digit_index][LED_B] = true;
+			display_state[digit_index][LED_C] = true;
+			display_state[digit_index][LED_D] = true;
+			display_state[digit_index][LED_E] = false;
+			display_state[digit_index][LED_F] = true;
+			display_state[digit_index][LED_G] = true;
+			break;
+	}
+
+
+}
 
 void turn_off_all() {
-	*pins_data.dig_1_port &= ~(1<<pins_data.dig_1_port_index);
-	*pins_data.dig_2_port &= ~(1<<pins_data.dig_2_port_index);
-	*pins_data.dig_3_port &= ~(1<<pins_data.dig_3_port_index);
-	*pins_data.dig_4_port &= ~(1<<pins_data.dig_4_port_index);
-	*pins_data.dig_special_port &= ~(1<<pins_data.dig_special_port_index);
+	for(int i=0; i<5 ; i++) {
+		*pins_data.dig_port[i] &= ~(1<<pins_data.dig_port_index[i]);
+	}
 
+	for(int i=0; i<10 ; i++) {
+		*pins_data.led_port[i] |= (1<<pins_data.led_port_index[i]);
+	}
+}
+
+void turn_on_digit(int digit_index)
+{
+	*pins_data.dig_port[digit_index] |= (1<<pins_data.dig_port_index[digit_index]);
+}
+
+void turn_on_led(int led_index)
+{
+	*pins_data.led_port[led_index] &= ~(1<<pins_data.led_port_index[led_index]);
 }
 

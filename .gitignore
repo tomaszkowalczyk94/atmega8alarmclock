@@ -1,3 +1,11 @@
+
+cSourceCode/.cproject
+cSourceCode/.project
+
+cSourceCode/.settings/
+cSourceCode/Release/*
+..gitignore.swp
+
 # Prerequisites
 *.d
 

@@ -11,91 +11,90 @@
 #include <avr/io.h>
 #include <stdbool.h>
 
+#define DIG_SPECIAL 0
+#define DIG_1 1
+#define DIG_2 2
+#define DIG_3 3
+#define DIG_4 4
+
+#define LED_A 0
+#define LED_B 1
+#define LED_C 2
+#define LED_D 3
+#define LED_E 4
+#define LED_F 5
+#define LED_G 6
+#define LED_DP 7
+#define LED_UC 8
+#define LED_LC 9
+
 struct pins_data {
-	volatile uint8_t *dig_1_ddr;
-	volatile uint8_t *dig_2_ddr;
-	volatile uint8_t *dig_3_ddr;
-	volatile uint8_t *dig_4_ddr;
-	volatile uint8_t *dig_special_ddr;
 
-	volatile uint8_t *dig_1_port;
-	volatile uint8_t *dig_2_port;
-	volatile uint8_t *dig_3_port;
-	volatile uint8_t *dig_4_port;
-	volatile uint8_t *dig_special_port;
+	volatile uint8_t *dig_ddr[5];
+	volatile uint8_t *dig_port[5];
+	uint8_t dig_port_index[5];
 
-	uint8_t dig_1_port_index;
-	uint8_t dig_2_port_index;
-	uint8_t dig_3_port_index;
-	uint8_t dig_4_port_index;
-	uint8_t dig_special_port_index;
-
-	volatile uint8_t *led_a_ddr;
-	volatile uint8_t *led_b_ddr;
-	volatile uint8_t *led_c_ddr;
-	volatile uint8_t *led_d_ddr;
-	volatile uint8_t *led_e_ddr;
-	volatile uint8_t *led_f_ddr;
-	volatile uint8_t *led_g_ddr;
-	volatile uint8_t *led_dp_ddr;
-	volatile uint8_t *led_uc_ddr;
-	volatile uint8_t *led_lc_ddr;
-
-	volatile uint8_t *led_a_port;
-	volatile uint8_t *led_b_port;
-	volatile uint8_t *led_c_port;
-	volatile uint8_t *led_d_port;
-	volatile uint8_t *led_e_port;
-	volatile uint8_t *led_f_port;
-	volatile uint8_t *led_g_port;
-	volatile uint8_t *led_dp_port;
-	volatile uint8_t *led_uc_port;
-	volatile uint8_t *led_lc_port;
-
-	uint8_t led_a_port_index;
-	uint8_t led_b_port_index;
-	uint8_t led_c_port_index;
-	uint8_t led_d_port_index;
-	uint8_t led_e_port_index;
-	uint8_t led_f_port_index;
-	uint8_t led_g_port_index;
-	uint8_t led_dp_port_index;
-	uint8_t led_uc_port_index;
-	uint8_t led_lc_port_index;
+	volatile uint8_t *led_ddr[10];
+	volatile uint8_t *led_port[10];
+	uint8_t led_port_index[10];
 
 } pins_data;
 
 
+/**
+ * array with state of display.
+ * First index is digit index, like first digit in display, second digit, special digit etc.
+ * 		allowed const: 	DIG_SPECIAL
+ *						DIG_1
+ *						DIG_2
+ *						DIG_3
+ *						DIG_4
+ * Second index is led index.
+ * 		allowed const:	LED_A
+ *						LED_B
+ *						LED_C
+ *						LED_D
+ *						LED_E
+ *						LED_F
+ *						LED_G
+ *						LED_DP - dot point
+ *						LED_UC - Only for digit
+ *						LED_LC - Only for digit
+ */
+volatile bool display_state[5][10];
 
-struct digit_state {
-	bool a;
-	bool b;
-	bool c;
-	bool d;
-	bool e;
-	bool f;
-	bool g;
-
-	/**
-	 * dot point
-	 */
-	bool dp;
-};
-
-struct display_state {
-	struct digit_state digit_1_state;
-	struct digit_state digit_2_state;
-	struct digit_state digit_3_state;
-	struct digit_state digit_4_state;
-
-	bool uc;
-	bool lc;
-
-} display_state;
-
-
+/**
+ * initializing pin states, and turn off all leds
+ */
 void init_led_display();
 
+/**
+ * display leds specified by display_state array
+ */
 void display();
+
+/**
+ * set display state array by digit. all digit can be from 0 to 9 of course.
+ */
+void set_display_state(int digit1, int digit2, int digit3, int digit4, bool upperComaDot, bool lowerComaDot);
+
+void set_digit(int digit_index, int digit);
+
+void turn_off_all();
+
+/**
+ * turn on one digit segment.
+ * 		allowed digit_index const: 	DIG_SPECIAL
+ *									DIG_1
+ *									DIG_2
+ *									DIG_3
+ *									DIG_4
+ */
+void turn_on_digit(int digit_index);
+
+/**
+ * turn on one led.
+ */
+void turn_on_led(int led_index);
 
 #endif /* LED_DISPLAY_H_ */
