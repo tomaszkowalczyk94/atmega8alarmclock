@@ -11,7 +11,7 @@
 
 #include "led_display.h"
 
-double volatile time = 0.0;
+uint32_t volatile seconds = 0;
 
 int main() {
 
@@ -53,24 +53,40 @@ int main() {
 
 	init_led_display();
 
-	// ================ timer initialize ================
+	// ================ timer0 initialize (for display)================
 
-	TCCR0 |= (1<<CS02) | (1<<CS00); // cls. 1024 preskaler
+	TCCR0 |= (1<<CS01); // clk. 8 preskaler
 	TIMSK |= (1<<TOIE0);
-	sei();
+
+	// ================ timer2 initialize (for time)================
+
+	TIMSK &= ~(1<<TOIE2); // disable timer2 interrupts
+
+	ASSR |= (1<<AS2); // set timer2 to asynchronous mode
+
+	TCCR2 = 0b0000101;// set prescaler to 1/128
+	TIMSK |= (1<<TOIE2);  // enable timer2 interrupts
+
+
+
+	sei(); // enable global interrupts
 
 	// ================ main loop =============
 	while(1)
 	{
 		_delay_ms(2);
-		display();
+		//display();
 	}
+}
+
+ISR(TIMER2_OVF_vect)
+{
+	seconds += 1;
+
+	set_display_state_by_2_digit(seconds, seconds, true);
 }
 
 ISR(TIMER0_OVF_vect)
 {
-	time += 0.254;
-
-	set_display_state_by_2_digit((int)time, (int)time, true);
+	display();
 }
-
