@@ -77,6 +77,15 @@ void set_display_state_by_2_digit(int digit1, int digit2, bool colon_state)
 	);
 }
 
+void setDisplayTimeInSec(int seconds)
+{
+	set_display_state_by_2_digit(
+			(int)(seconds/3600),
+			(seconds%3600)/60,
+			seconds%2
+	);
+}
+
 void set_digit(int digit_index, int digit)
 {
 	if(digit_index == DIG_SPECIAL) {

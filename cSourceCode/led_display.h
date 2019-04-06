@@ -78,6 +78,8 @@ void set_display_state_by_4_digit(int digit1, int digit2, int digit3, int digit4
 
 void set_display_state_by_2_digit(int digit1, int digit2, bool colon_state);
 
+void setDisplayTimeInSec(int seconds);
+
 void set_digit(int digit_index, int digit);
 
 
