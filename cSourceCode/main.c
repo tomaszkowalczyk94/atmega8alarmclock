@@ -14,7 +14,7 @@
 #include "sound.h"
 
 
-uint32_t volatile time = 0;
+int volatile time = 0;
 uint32_t volatile alarm = 0;
 
 enum DEVICE_STATE {
@@ -109,19 +109,18 @@ int main() {
 	PORTB &= ~(1<<PIEZO_SPEAKER_PIN_2);
 	
 	// ================ timer0 initialize (for display)================
-
 	TCCR0 |= (1<<CS01); // clk. 8 preskaler
 	TIMSK |= (1<<TOIE0);
 
-	// ================ timer2 initialize (for time)================
-	TIMSK &= ~(1<<TOIE2); // disable timer2 interrupts
-
-	ASSR |= (1<<AS2); // set timer2 to asynchronous mode
-
-	TCCR2 = 0b0000101;// set prescaler to 1/128
-	TIMSK |= (1<<TOIE2);  // enable timer2 interrupts
-
+	// ================ timer2 (for time) initialize by documetation (page 117) ================
 	
+	TIMSK &= ~(1<<TOIE2); // disable timer2 interrupts
+	
+	ASSR |= (1<<AS2); // set timer2 to asynchronous mode
+	TCNT2 = 0;
+	TCCR2 |= _BV(CS22) | _BV(CS20) ;// set prescaler to 1/128
+	while (ASSR&((1<<TCN2UB)|(1<<TCR2UB)));//wait for registers update
+	TIMSK |= (1<<TOIE2);  // enable timer2 interrupts
 	
 	// ================= timer 1 sound initialize ======================
 	TCCR1A |= (_BV(COM1A0)); //Toggle OC1A/OC1B on Compare Match
@@ -131,15 +130,13 @@ int main() {
 	TCCR1B |= (1 << CS11); // Ustawienie preskalera na wartość 64
 	TCCR1B |= (1 << CS10);
 	
-	OCR1A = 312; // Przepełnienie co...
-	TIMSK |= (1<<OCIE1A);  // enable timer interrupts
-
-	
+	OCR1A = 312; // Przepe�nienie co...
 
 	// ================ main loop =============
 	sei();
 	while(1)
 	{
+		
 		if(button_is_pressed(MODE_BUTTON)){
 			device_state++;
 			if(device_state>SET_CLOCK_H) {
@@ -147,25 +144,35 @@ int main() {
 				_delay_ms(300);
 			}
 		}
-
-		switch(device_state) {
-			case DISPLAY_CLOCK:
+		
+			
+		switch(device_state) 
+		{
+			case DISPLAY_CLOCK: {
 				setDisplayTimeInSec(time);
 				break;
-			case SET_ALARM_MIN:
+			}	
+			case SET_ALARM_MIN: {
 				set_display_state_by_2_digit(1, 1, true);
 				break;
-			case SET_ALARM_H:
+			}	
+			case SET_ALARM_H: {
 				set_display_state_by_2_digit(2, 2, true);
 				break;
-			case SET_CLOCK_MIN:
+			}	
+			case SET_CLOCK_MIN: {
 				set_display_state_by_2_digit(3, 3, true);
 				break;
-			case SET_CLOCK_H:
+			}	
+			case SET_CLOCK_H: {
 				set_display_state_by_2_digit(4, 4, true);
 				break;
+			}	
 		}
+		
 	}
+	
+	for(;;);
 }
 
 ISR(TIMER2_OVF_vect)
