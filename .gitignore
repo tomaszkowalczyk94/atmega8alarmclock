@@ -6,6 +6,12 @@ cSourceCode/.settings/
 cSourceCode/Release/*
 ..gitignore.swp
 
+cSourceCode/cSourceCode.atsln
+cSourceCode/cSourceCode.componentinfo.xml
+cSourceCode/cSourceCode.cproj
+cSourceCode/.vs/*
+cSourceCode/Debug/*
+
 # Prerequisites
 *.d
 

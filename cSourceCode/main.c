@@ -12,7 +12,7 @@
 
 #include "led_display.h"
 #include "sound.h"
-
+#include "initializer.h"
 
 int volatile time = 0;
 uint32_t volatile alarm = 0;
@@ -25,11 +25,7 @@ enum DEVICE_STATE {
 	SET_CLOCK_H = 4
 } device_state = DISPLAY_CLOCK;
 
-#define MODE_BUTTON PD5
-#define SET_BUTTON PD6
 
-#define PIEZO_SPEAKER_PIN_1 PB1
-#define PIEZO_SPEAKER_PIN_2 PB2
 
 bool button_is_pressed(int button)
 {
@@ -43,97 +39,17 @@ bool button_is_pressed(int button)
 	return false;
 }
 
-
-
 int main() {
 
-	// ============= pin initializing =============
-	int i;
-
-	pins_data.dig_ddr[DIG_1] = &DDRD;
-	pins_data.dig_port[DIG_1] = &PORTD;
-	pins_data.dig_port_index[DIG_1] = PD3;
-	
-	pins_data.dig_ddr[DIG_2] = &DDRD;
-	pins_data.dig_port[DIG_2] = &PORTD;
-	pins_data.dig_port_index[DIG_2] = PD4;
-	
-	pins_data.dig_ddr[DIG_3] = &DDRB;
-	pins_data.dig_port[DIG_3] = &PORTB;
-	pins_data.dig_port_index[DIG_3] = PB3;
-	
-	pins_data.dig_ddr[DIG_4] = &DDRB;
-	pins_data.dig_port[DIG_4] = &PORTB;
-	pins_data.dig_port_index[DIG_4] = PB4;
-	
-	pins_data.dig_ddr[DIG_SPECIAL] = &DDRB;
-	pins_data.dig_port[DIG_SPECIAL] = &PORTB;
-	pins_data.dig_port_index[DIG_SPECIAL] = PB5;
-
-
-	for(i=0; i<6 ; i++)
-	{
-		pins_data.led_ddr[i] = &DDRC;
-		pins_data.led_port[i] = &PORTC;
-	}
-
-	pins_data.led_ddr[LED_G] = &DDRB;
-	pins_data.led_port[LED_G] = &PORTB;
-
-	pins_data.led_port_index[LED_A] = PC0;
-	pins_data.led_port_index[LED_B] = PC1;
-	pins_data.led_port_index[LED_C] = PC2;
-	pins_data.led_port_index[LED_D] = PC3;
-	pins_data.led_port_index[LED_E] = PC4;
-	pins_data.led_port_index[LED_F] = PC5;
-	pins_data.led_port_index[LED_G] = PB0;
-
-	pins_data.led_ddr[LED_COLON] = &DDRD;
-	pins_data.led_port[LED_COLON] = &PORTD;
-	pins_data.led_port_index[LED_COLON] = PD7;
-
-	init_led_display();
-	
-	// ================= buttons setup ================
-	DDRD &= ~(1<<MODE_BUTTON);
-	DDRD &= ~(1<<SET_BUTTON);
-
-	PORTD |= (1<<MODE_BUTTON);
-	PORTD |= (1<<SET_BUTTON);
-
-	// ================= piezo startup speaker setup =================
-	DDRB |= (1<<PIEZO_SPEAKER_PIN_1);
-	DDRB |= (1<<PIEZO_SPEAKER_PIN_2);
-	
-	PORTB |= (1<<PIEZO_SPEAKER_PIN_1);
-	PORTB &= ~(1<<PIEZO_SPEAKER_PIN_2);
-	
-	// ================ timer0 initialize (for display)================
-	TCCR0 |= (1<<CS01); // clk. 8 preskaler
-	TIMSK |= (1<<TOIE0);
-
-	// ================ timer2 (for time) initialize by documetation (page 117) ================
-	
-	TIMSK &= ~(1<<TOIE2); // disable timer2 interrupts
-	
-	ASSR |= (1<<AS2); // set timer2 to asynchronous mode
-	TCNT2 = 0;
-	TCCR2 |= _BV(CS22) | _BV(CS20) ;// set prescaler to 1/128
-	while (ASSR&((1<<TCN2UB)|(1<<TCR2UB)));//wait for registers update
-	TIMSK |= (1<<TOIE2);  // enable timer2 interrupts
-	
-	// ================= timer 1 sound initialize ======================
-	TCCR1A |= (_BV(COM1A0)); //Toggle OC1A/OC1B on Compare Match
-	
-	TCCR1B |= (1 << WGM12); // Ustawienie trybu CT
-
-	TCCR1B |= (1 << CS11); // Ustawienie preskalera na wartość 64
-	TCCR1B |= (1 << CS10);
-	
-	OCR1A = 312; // Przepe�nienie co...
-
-	// ================ main loop =============
+	main_display_initialize();
+	button_initialize();
+	speaker_initialize();
+	display_timer_initialize();
+	time_timer_initialize();
+	sound_timer_initialize() ;
 	sei();
+	
+	// ================ main loop =============
 	while(1)
 	{
 		
@@ -145,7 +61,6 @@ int main() {
 			}
 		}
 		
-			
 		switch(device_state) 
 		{
 			case DISPLAY_CLOCK: {
@@ -171,8 +86,6 @@ int main() {
 		}
 		
 	}
-	
-	for(;;);
 }
 
 ISR(TIMER2_OVF_vect)
@@ -184,3 +97,6 @@ ISR(TIMER0_OVF_vect)
 {
 	display();
 }
+
+
+
