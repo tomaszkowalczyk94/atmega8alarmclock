@@ -14,8 +14,18 @@
 #include "sound.h"
 #include "initializer.h"
 
+
+// count of seconds
 int volatile time = 0;
 uint32_t volatile alarm = 0;
+
+
+
+/*
+ * is incremented by 3, with display refreshed. 
+ * it isnt connect with "time" varible!!!.
+ */
+uint32_t volatile count_of_ms = 0;
 
 enum DEVICE_STATE {
 	DISPLAY_CLOCK = 0,
@@ -39,6 +49,18 @@ bool button_is_pressed(int button)
 	return false;
 }
 
+static int barka_song[14] = {
+	739,1500,
+	739,250,
+	659,250,
+	739,250,
+	783,250,
+	739,250,
+	659,250
+};
+
+
+
 int main() {
 
 	main_display_initialize();
@@ -49,10 +71,13 @@ int main() {
 	sound_timer_initialize() ;
 	sei();
 	
+	play_song(barka_song, 7);
 	// ================ main loop =============
 	while(1)
 	{
-		
+		refresh_tones(count_of_ms);
+		_delay_ms(40);
+		/*
 		if(button_is_pressed(MODE_BUTTON)){
 			device_state++;
 			if(device_state>SET_CLOCK_H) {
@@ -60,7 +85,7 @@ int main() {
 				_delay_ms(300);
 			}
 		}
-		
+		*/
 		switch(device_state) 
 		{
 			case DISPLAY_CLOCK: {
@@ -96,6 +121,7 @@ ISR(TIMER2_OVF_vect)
 ISR(TIMER0_OVF_vect)
 {
 	display();
+	count_of_ms += 3;
 }
 
 

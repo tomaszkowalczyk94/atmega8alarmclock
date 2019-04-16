@@ -93,7 +93,7 @@ void time_timer_initialize()
 void sound_timer_initialize() 
 {
 	// ================= timer 1 sound initialize ======================
-	TCCR1A |= (_BV(COM1A0)); //Toggle OC1A/OC1B on Compare Match
+	//TCCR1A |= (_BV(COM1A0)); //Toggle OC1A/OC1B on Compare Match
 	
 	TCCR1B |= (1 << WGM12); // select CTC mode
 
